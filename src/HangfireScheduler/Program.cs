@@ -1,6 +1,5 @@
 using Hangfire;
 using HangfireScheduler;
-using HangfireScheduler.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,12 +20,9 @@ builder.Services.AddHangfire(configuration => configuration
         .UseSqlServerStorage(connectionString));
 
 builder.Services.AddHangfireServer();
-
-builder.Services.AddTransient<EveryMinuteTask>();
+builder.Services.AddScheduledTasks();
 
 var app = builder.Build();
-var backgroundJobs = app.Services.GetRequiredService<IBackgroundJobClient>();
-var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -47,9 +43,6 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-backgroundJobs.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
-
-var task = app.Services.GetRequiredService<EveryMinuteTask>();
-recurringJobs.AddOrUpdate("Job", () => task.Run(), "*/1 * * * *");
+app.Services.QueueScheduledTasks();
 
 await app.RunAsync();
