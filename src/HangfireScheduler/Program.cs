@@ -35,7 +35,13 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("", new DashboardOptions
+{
+    AppPath = null,
+    DashboardTitle = "Hangfire Scheduler",
+    DisplayStorageConnectionString = false,
+    DisplayNameFunc = DisplayNameGenerator.Generate,
+});
 
 app.UseRouting();
 
