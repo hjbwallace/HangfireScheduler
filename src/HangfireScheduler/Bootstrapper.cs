@@ -2,6 +2,7 @@
 using Hangfire.Storage;
 using HangfireScheduler.Tasks;
 using Microsoft.Data.SqlClient;
+using System.Reflection;
 
 namespace HangfireScheduler
 {
@@ -22,7 +23,7 @@ namespace HangfireScheduler
 
         public static void AddScheduledTasks(this IServiceCollection services)
         {
-            var baseType = typeof(ScheduledTask);
+            var baseType = typeof(IScheduledTask);
             var types = baseType.Assembly
                 .GetTypes()
                 .Where(baseType.IsAssignableFrom)
@@ -46,14 +47,28 @@ namespace HangfireScheduler
             foreach (var recurringJob in existingRecurringJobs)
                 recurringJobsManager.RemoveIfExists(recurringJob.Id);
 
-            var scheduledTasks = services.GetServices<ScheduledTask>() ?? Enumerable.Empty<ScheduledTask>();
+            var scheduledTasks = services.GetServices<IScheduledTask>() ?? Enumerable.Empty<IScheduledTask>();
+            var scheduledTaskDetails = scheduledTasks.Select(x => new
+            {
+                Task = x,
+                Id = x.GetType().Name,
+                Details = x.GetType().GetCustomAttribute<ScheduledTaskAttribute>(),
+            });
 
-            foreach (var scheduledTask in scheduledTasks)
+            var invalidTasks = scheduledTaskDetails
+                .Where(x => x.Details == null)
+                .Select(x => x.Id)
+                .ToArray();
+
+            if (invalidTasks.Any())
+                throw new InvalidOperationException("Tasks are missing the `ScheduledTaskAttribute`: " + string.Join(", ", invalidTasks));
+
+            foreach (var scheduledTask in scheduledTaskDetails)
             {
                 recurringJobsManager.AddOrUpdate(
-                    scheduledTask.GetType().Name,
-                    () => scheduledTask.RunAsync(),
-                    scheduledTask.Schedule,
+                    scheduledTask.Id,
+                    () => TaskRunner.RunAsync(scheduledTask.Task),
+                    scheduledTask.Details!.Schedule,
                     jobOptions);
             }
         }

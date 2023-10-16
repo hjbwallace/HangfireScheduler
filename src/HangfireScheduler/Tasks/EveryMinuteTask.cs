@@ -1,15 +1,16 @@
 ﻿namespace HangfireScheduler.Tasks
 {
-    public class EveryMinuteTask : ScheduledTask
+    [ScheduledTask(
+        Schedule = "*/1 * * * *",
+        Description = "Logs every minute")]
+    public class EveryMinuteTask : IScheduledTask
     {
         public EveryMinuteTask()
         {
             Console.WriteLine("Building EveryMinuteTask!");
         }
 
-        public override string Schedule => "*/1 * * * *";
-
-        public override Task RunAsync()
+        public Task RunAsync()
         {
             Console.WriteLine("Running EveryMinuteTask!");
             return Task.CompletedTask;

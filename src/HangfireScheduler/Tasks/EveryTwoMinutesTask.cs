@@ -1,15 +1,16 @@
 ﻿namespace HangfireScheduler.Tasks
 {
-    public class EveryTwoMinutesTask : ScheduledTask
+    [ScheduledTask(
+        Schedule = "*/2 * * * *",
+        Description = "Logs every even minute")]
+    public class EveryTwoMinutesTask : IScheduledTask
     {
         public EveryTwoMinutesTask()
         {
             Console.WriteLine("Building EveryTwoMinutesTask!");
         }
 
-        public override string Schedule => "*/2 * * * *";
-
-        public override Task RunAsync()
+        public Task RunAsync()
         {
             Console.WriteLine("Running EveryTwoMinutesTask!");
             return Task.CompletedTask;

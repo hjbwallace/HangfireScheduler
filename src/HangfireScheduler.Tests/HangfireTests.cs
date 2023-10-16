@@ -12,14 +12,14 @@ namespace HangfireScheduler.Tests
         [Fact]
         public void ScheduledTasksAreRegistered()
         {
-            var tasks = _factory.Services.GetServices<ScheduledTask>();
+            var tasks = _factory.Services.GetServices<IScheduledTask>();
             Assert.Equal(2, tasks.Count());
         }
 
         [Fact]
         public void RecurringTasksAreAvailable()
         {
-            var tasks = _factory.Services.GetServices<ScheduledTask>();
+            var tasks = _factory.Services.GetServices<IScheduledTask>();
             var recurringJobs = GetRecurringJobs();
 
             Assert.Equal(tasks.Count(), recurringJobs.Length);
