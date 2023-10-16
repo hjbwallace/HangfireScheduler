@@ -52,3 +52,7 @@ app.MapRazorPages();
 app.Services.QueueScheduledTasks();
 
 await app.RunAsync();
+
+public partial class Program
+{
+}
